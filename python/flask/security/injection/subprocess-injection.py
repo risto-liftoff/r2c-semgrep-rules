@@ -1,5 +1,5 @@
+import os
 import subprocess
-import sys
 import flask
 
 app = flask.Flask(__name__)
@@ -52,6 +52,12 @@ def g():
     program = subprocess.Popen(['python2', python_file], stdin=subprocess.PIPE, text=True)
     program.communicate(input=payload, timeout=1)
 
+@app.route("h")
+def h():
+    ip = flask.request.args.get("ip")
+    # ruleid:subprocess-injection
+    subprocess.run("ping " + ip, timeout=5)
+
 @app.route("d_ok/<cmd>/<ip>")
 def d_ok(cmd, ip):
     # ok:subprocess-injection
@@ -90,5 +96,15 @@ def ok3():
     ip = flask.request.args.get("ip")
     subprocess.call(["echo", "a", ";", "rm", "-rf", "/"])
 
+@app.route("ok4")
+def ok4():
+    event = flask.request.get_json()
+    # ok:subprocess-injection
+    subprocess.run("echo nothing", timeout=event['timeout'])
 
+@app.route("ok5")
+def ok5():
+    ip = flask.request.args.get("ip")
+    # ok:subprocess-injection
+    subprocess.run([f"{os.environ['PING_HOME']}ping", ip])
 
